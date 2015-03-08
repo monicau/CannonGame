@@ -16,9 +16,11 @@ public class CannonBall : MonoBehaviour {
 	public float airResistance_x;
 	public float airResistance_y;
 	public float wind;
-	public float bounciness;
+	private bool collided;
+	private float oldVelocity;
 	private Wind windComponent;
 	private GameObject cannon;
+	private int count = 0;
 
 	// Use this for initialization
 	void Start () {
@@ -34,18 +36,19 @@ public class CannonBall : MonoBehaviour {
 		initialVelocity = Random.Range (velocityMax, velocityMax + 1);
 		vi_x = initialVelocity * Mathf.Cos (Mathf.Deg2Rad*angle);
 		vi_y = initialVelocity * Mathf.Sin (Mathf.Deg2Rad*angle);
+		collided = false;
 	}
 
 	public void Bounce(float damp) {
-		if (vi_x > 0) {
-			vi_x = (vi_x - damp) * -1.0f;
-		} else {
-			vi_x = (vi_x + damp) * -1.0f;
-		}
-//		vi_x = -1.0f*vi_x;
-//		Debug.Log ("v_x is " + vi_x);
-		vi_x = -bounciness*vi_x;
-		vi_y = vi_y + 10f;
+//		if (vi_x > 0) {
+//			vi_x = (vi_x - damp) * -1.0f;
+//		} else {
+//			vi_x = (vi_x + damp) * -1.0f;
+//		}
+		oldVelocity = vi_x;
+		vi_x = 0;
+		vi_y = 12f;
+		collided = true;
 	}
 	
 	// Update is called once per frame
@@ -71,6 +74,12 @@ public class CannonBall : MonoBehaviour {
 		//Apply wind force and initial velocity to position
 		if (!enableWind) {
 			wind = 0;
+		}
+		if (collided) {
+			count++;
+			if (count == 2) {
+				vi_x = -1*oldVelocity;
+			} 
 		}
 		if (pos_x < 0 && vi_x > 0) { 
 			pos_x = -1.0f * (Mathf.Abs (pos_x) + vi_x) + (-1.0f * wind);
