@@ -3,46 +3,62 @@ using System.Collections;
 
 public class MeshSlope : MonoBehaviour {
 
-	// http://answers.unity3d.com/questions/139808/creating-a-plane-mesh-directly-from-code.html
-	void Start () {
+	public Material material;
 
-	}
-	void Awake() {
+
+	// http://answers.unity3d.com/questions/139808/creating-a-plane-mesh-directly-from-code.html
+	void Start() {
 		Vector3[] cliff = new Vector3[10];
 		for (int i = 0; i<cliff.Length; i++) {
 			cliff[i] = new Vector3(0, i, 0);
 		}
 		MidpointBisection (cliff, 0, cliff.Length-1);
-//		foreach (Vector3 v in cliff) {
-//			Debug.Log(v);
-//		}
-		GameObject rightSlope = new GameObject();
-		rightSlope.transform.parent = gameObject.transform;
-		rightSlope.name = "RightSlope";
+
+		GameObject rightSlope = transform.FindChild ("RightSlope").gameObject;
 		for (int i=0; i<cliff.Length-1; i++) {
 			Vector3[] vectors = new Vector3[4];
 			vectors[0] = new Vector3 (cliff[i].x, cliff[i].y, 0);
-			vectors[1] = new Vector3 (1, cliff[i].y, 0);
+			vectors[3] = new Vector3 (1, cliff[i].y, 0);
 			vectors[2] = new Vector3 (1, cliff[i+1].y, 0);
-			vectors[3] = new Vector3 (cliff[i+1].x, cliff[i+1].y, 0);
-			GameObject m = CreateMeshObject("m"+i.ToString(), vectors);
+			vectors[1] = new Vector3 (cliff[i+1].x, cliff[i+1].y, 0);
+			GameObject m = CreateMeshObject("r"+i.ToString(), vectors);
 			m.transform.parent = rightSlope.transform;
 		}
 		rightSlope.transform.position = new Vector3(10, -5, 0);
 
-		GameObject leftSlope = new GameObject ();
-		leftSlope.name = "LeftSlope";
-		leftSlope.transform.parent = gameObject.transform;
+		//Reset cliff variable for second slope
+		for (int i = 0; i<cliff.Length; i++) {
+			cliff[i] = new Vector3(0, i, 0);
+		}
+		MidpointBisection (cliff, 0, cliff.Length-1);
+		GameObject leftSlope = transform.FindChild ("LeftSlope").gameObject;
 		for (int i=0; i<cliff.Length-1; i++) {
 			Vector3[] vectors = new Vector3[4];
 			vectors[0] = new Vector3 (-cliff[i].x, cliff[i].y, 0);
 			vectors[1] = new Vector3 (-1, cliff[i].y, 0);
 			vectors[2] = new Vector3 (-1, cliff[i+1].y, 0);
 			vectors[3] = new Vector3 (-cliff[i+1].x, cliff[i+1].y, 0);
-			GameObject m = CreateMeshObject("m"+i.ToString(), vectors); 
+			GameObject m = CreateMeshObject("l"+i.ToString(), vectors); 
 			m.transform.parent = leftSlope.transform;
 		}
 		leftSlope.transform.position = new Vector3(-10, -5, 0);
+		MergeMeshes ();
+	}
+	private void MergeMeshes(){
+		MeshFilter[] meshFilters = GetComponentsInChildren<MeshFilter>();
+		CombineInstance[] combine = new CombineInstance[meshFilters.Length];
+		int x = 0;
+		while (x < meshFilters.Length) {
+			Mesh mesh = meshFilters[x].sharedMesh;
+			combine[x].mesh = mesh;
+			combine[x].transform = meshFilters[x].transform.localToWorldMatrix;
+			meshFilters[x].gameObject.active = false;
+			x++;
+		}
+		transform.GetComponent<MeshFilter>().mesh = new Mesh();
+		transform.GetComponent<MeshFilter>().mesh.CombineMeshes(combine, true);
+		transform.gameObject.active = true;
+		transform.gameObject.renderer.material = material;
 	}
 	void MidpointBisection(Vector3[] array, int start, int stop) {
 		int midpoint = (stop+start) / 2;
