@@ -2,7 +2,8 @@
 using System.Collections;
 
 public class RightCannon : MonoBehaviour {
-	
+
+	public float ballLifetime;
 	public int minAngle;
 	public int maxAngle;
 	public int angle;
@@ -20,7 +21,7 @@ public class RightCannon : MonoBehaviour {
 			angle = Random.Range (minAngle, maxAngle+1);
 			gameObject.transform.eulerAngles = new Vector3(0,0,90-angle);
 			GameObject ball = Instantiate (cannonBallPrefab) as GameObject;
-			Destroy(ball, 2);
+			Destroy(ball, ballLifetime);
 		}
 	}
 }

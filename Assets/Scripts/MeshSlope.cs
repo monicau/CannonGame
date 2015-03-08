@@ -25,7 +25,8 @@ public class MeshSlope : MonoBehaviour {
 			m.transform.parent = rightSlope.transform;
 		}
 		rightSlope.transform.position = new Vector3(10, -5, 0);
-
+		rightSlope.GetComponent<MergeMeshes> ().CombineMeshes ();
+		
 		//Reset cliff variable for second slope
 		for (int i = 0; i<cliff.Length; i++) {
 			cliff[i] = new Vector3(0, i, 0);
@@ -42,24 +43,9 @@ public class MeshSlope : MonoBehaviour {
 			m.transform.parent = leftSlope.transform;
 		}
 		leftSlope.transform.position = new Vector3(-10, -5, 0);
-		MergeMeshes ();
+		leftSlope.GetComponent<MergeMeshes> ().CombineMeshes ();
 	}
-	private void MergeMeshes(){
-		MeshFilter[] meshFilters = GetComponentsInChildren<MeshFilter>();
-		CombineInstance[] combine = new CombineInstance[meshFilters.Length];
-		int x = 0;
-		while (x < meshFilters.Length) {
-			Mesh mesh = meshFilters[x].sharedMesh;
-			combine[x].mesh = mesh;
-			combine[x].transform = meshFilters[x].transform.localToWorldMatrix;
-			meshFilters[x].gameObject.active = false;
-			x++;
-		}
-		transform.GetComponent<MeshFilter>().mesh = new Mesh();
-		transform.GetComponent<MeshFilter>().mesh.CombineMeshes(combine, true);
-		transform.gameObject.active = true;
-		transform.gameObject.renderer.material = material;
-	}
+
 	void MidpointBisection(Vector3[] array, int start, int stop) {
 		int midpoint = (stop+start) / 2;
 		if (midpoint != start && midpoint != stop) {

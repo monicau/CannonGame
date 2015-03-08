@@ -24,8 +24,8 @@ public class CannonBall : MonoBehaviour {
 		cannon = GameObject.Find ("RightCannon");
 		windComponent = GameObject.Find ("Wind").GetComponent<Wind> ();
 		wind = windComponent.w;
-		pos_x = cannon.transform.position.x;
-		pos_y = cannon.transform.position.y;
+		pos_x = cannon.transform.position.x - 1f;
+		pos_y = cannon.transform.position.y + 1f;
 		transform.position = new Vector3 (pos_x, pos_y, 0);
 		//Get latest angle of cannon
 		angle = cannon.GetComponent<RightCannon> ().angle;
