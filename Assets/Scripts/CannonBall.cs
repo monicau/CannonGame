@@ -16,6 +16,7 @@ public class CannonBall : MonoBehaviour {
 	public float airResistance_x;
 	public float airResistance_y;
 	public float wind;
+	public float cResitution;
 	private bool collided;
 	private float oldVelocity;
 	private Wind windComponent;
@@ -39,15 +40,10 @@ public class CannonBall : MonoBehaviour {
 		collided = false;
 	}
 
-	public void Bounce(float damp) {
-//		if (vi_x > 0) {
-//			vi_x = (vi_x - damp) * -1.0f;
-//		} else {
-//			vi_x = (vi_x + damp) * -1.0f;
-//		}
+	public void Bounce() {
 		oldVelocity = vi_x;
 		vi_x = 0;
-		vi_y = 12f;
+//		vi_y = 12f;
 		collided = true;
 	}
 	
@@ -55,6 +51,13 @@ public class CannonBall : MonoBehaviour {
 	void Update () {
 		//Get latest wind value
 		wind = windComponent.w;
+
+		if (collided) {
+			count++;
+			if (count == 2) {
+				vi_x = -cResitution*oldVelocity;
+			} 
+		}
 
 		//Apply air resistance to velocity
 		if (vi_x < 0) {
@@ -75,12 +78,7 @@ public class CannonBall : MonoBehaviour {
 		if (!enableWind) {
 			wind = 0;
 		}
-		if (collided) {
-			count++;
-			if (count == 2) {
-				vi_x = -1*oldVelocity;
-			} 
-		}
+
 		if (pos_x < 0 && vi_x > 0) { 
 			pos_x = -1.0f * (Mathf.Abs (pos_x) + vi_x) + (-1.0f * wind);
 		} else if (pos_x >= 0 && vi_x > 0) {

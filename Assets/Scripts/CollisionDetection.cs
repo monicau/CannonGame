@@ -9,7 +9,6 @@ public class CollisionDetection : MonoBehaviour {
 	public float y_stdev;
 	public string slopeName1;
 	public string slopeName2;
-	public float dampFactor;
 	public Material redMat;
 	public GameObject dot;
 	private GameObject slope1;
@@ -57,7 +56,7 @@ public class CollisionDetection : MonoBehaviour {
 					Debug.Log("COLLIDED!!");
 					dots[j].renderer.material = redMat;
 				}
-				gameObject.GetComponent<CannonBall>().Bounce(dampFactor);
+				gameObject.GetComponent<CannonBall>().Bounce();
 			}
 			j++;
 		}
