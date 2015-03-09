@@ -22,7 +22,6 @@ public class Dog : MonoBehaviour {
 	List<Vector3> dogCoordinates;
 	Wind wind;
 	List<LineRenderer> lines;
-	List<Vector3Pair> lineVerticesPairs;
 	List<GameObject> lineObjects;//objects that each have a LineRenderer
 	Vector3[] cliffVertices;
 	GameObject cannon;
@@ -31,7 +30,6 @@ public class Dog : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		cliffVertices = GameObject.Find ("RightSlope").GetComponent<MergeMeshes> ().vertices;
-		lineVerticesPairs = new List<Vector3Pair> ();
 
 		//Get latest angle of cannon
 		cannon = GameObject.Find ("LeftCannon");
@@ -218,6 +216,29 @@ public class Dog : MonoBehaviour {
 		diff = (deltaLength-0.2f) / deltaLength;
 		currentPos [16] = Add (currentPos [16], delta * 0.5f * diff);
 		currentPos [17] = Subtract (currentPos [17], delta * 0.5f * diff);
+		//Front leg to body constraint
+		delta = Subtract (currentPos [10], currentPos [0]);
+		deltaLength = Mathf.Sqrt (Vector3.Dot (delta, delta));
+		diff = (deltaLength-0.25f) / deltaLength;
+		currentPos [0] = Add (currentPos [0], delta * 0.5f * diff);
+		currentPos [10] = Subtract (currentPos [10], delta * 0.5f * diff);
+		delta = Subtract (currentPos [10], currentPos [1]);
+		deltaLength = Mathf.Sqrt (Vector3.Dot (delta, delta));
+		diff = (deltaLength-0.75f) / deltaLength;
+		currentPos [1] = Add (currentPos [1], delta * 0.5f * diff);
+		currentPos [10] = Subtract (currentPos [10], delta * 0.5f * diff);
+		//Back leg to body constraint
+		delta = Subtract (currentPos [14], currentPos [1]);
+		deltaLength = Mathf.Sqrt (Vector3.Dot (delta, delta));
+		diff = (deltaLength-0.25f) / deltaLength;
+		currentPos [1] = Add (currentPos [1], delta * 0.5f * diff);
+		currentPos [14] = Subtract (currentPos [14], delta * 0.5f * diff);
+		delta = Subtract (currentPos [14], currentPos [0]);
+		deltaLength = Mathf.Sqrt (Vector3.Dot (delta, delta));
+		diff = (deltaLength-0.75f) / deltaLength;
+		currentPos [0] = Add (currentPos [0], delta * 0.5f * diff);
+		currentPos [14] = Subtract (currentPos [14], delta * 0.5f * diff);
+
 		//Eye constraint
 		delta = Subtract (currentPos [6], currentPos [5]);
 		deltaLength = Mathf.Sqrt (Vector3.Dot (delta, delta));
@@ -265,7 +286,6 @@ public class Dog : MonoBehaviour {
 	}
 	// Update is called once per frame
 	void Update () {
-		lineVerticesPairs.Clear ();
 
 		timeStep = Time.deltaTime;
 		TimeStep ();
@@ -274,12 +294,10 @@ public class Dog : MonoBehaviour {
 		for (int i=0; i<3; i++) {
 			lines[i].SetPosition(0, currentPos[i]);
 			lines[i].SetPosition(1, currentPos[i+1]);
-			lineVerticesPairs.Add(new Vector3Pair(currentPos[i], currentPos[i+1]));
 		}
 		//Close up the rectangle of the body
 		lines[3].SetPosition(0, currentPos[3]);
 		lines[3].SetPosition(1, currentPos[0]);
-		lineVerticesPairs.Add(new Vector3Pair(currentPos[3], currentPos[0]));
 		//Draw neck
 		lines [4].SetPosition (0, currentPos [3]);
 		lines [4].SetPosition (1, currentPos [4]);
