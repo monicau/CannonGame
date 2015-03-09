@@ -43,7 +43,7 @@ public class CannonBall : MonoBehaviour {
 	public void Bounce() {
 		oldVelocity = vi_x;
 		vi_x = 0;
-//		vi_y = 12f;
+		vi_y = 10f;
 		collided = true;
 	}
 	
