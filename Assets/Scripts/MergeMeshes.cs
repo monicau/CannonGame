@@ -7,6 +7,8 @@ public class MergeMeshes : MonoBehaviour {
 	public Vector3[] vertices;
 	public bool left = false;
 	public bool right = false;
+	public bool debugVertices = false;
+	public GameObject dot;
 
 	private void CreateVerticesList() {
 		//Grab list of vertices in this mesh
@@ -19,14 +21,36 @@ public class MergeMeshes : MonoBehaviour {
 		for (int i=0; i<verticesList.Length/2; i++) {
 			set.Add(verticesList[i]);
 		}
-		//Transfer back into an array.. There must be a better way but my brain wants to sleep
-		Vector3[] prunedList = new Vector3[set.Count];
+		//Sort vectors by y so we can find the lines of the cliff for collision detection
+		//Convert set back to array first
+		Vector3[] array = new Vector3[set.Count];
 		int j = 0;
-		foreach (Vector3 v in set) {
+		foreach (Vector3 s in set) {
+			array[j] = s;
+			j++;
+		}
+		Vector3[] sortedList = SortVectorByY (array);
+
+		//Transfer back into an array.. There must be a better way but my brain wants to sleep
+		Vector3[] prunedList = new Vector3[sortedList.Length];
+		j = 0;
+		foreach (Vector3 v in sortedList) {
 			prunedList[j] = v;
 			j++;
 		}
 		vertices = prunedList;
+	}
+	private Vector3[] SortVectorByY(Vector3[] vectors) {
+		for (int i = 0; i < vectors.Length-1; i++) {
+			for (int j = i + 1; j > 0; j--) {
+					if (vectors[j-1].y > vectors[j].y) {
+						Vector3 temp = vectors[j-1];
+						vectors[j-1] = vectors[j];
+						vectors[j] = temp;
+					}
+			}
+		}
+		return vectors;
 	}
 	private Vector3[] SortVectorByX(bool leftSlope, Vector3[] vectors) {
 		for (int i = 0; i < vectors.Length-1; i++) {
@@ -69,5 +93,15 @@ public class MergeMeshes : MonoBehaviour {
 		transform.gameObject.renderer.material = material;
 		transform.position = new Vector3(0, 0, 0);
 		CreateVerticesList ();
+
+		if (debugVertices) {
+			DrawVertices();
+		}
+	}
+	private void DrawVertices() {
+		foreach (Vector3 v in vertices) {
+			GameObject o = Instantiate (dot) as GameObject;
+			o.transform.position = v;
+		}
 	}
 }

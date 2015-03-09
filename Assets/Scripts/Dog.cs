@@ -22,12 +22,17 @@ public class Dog : MonoBehaviour {
 	List<Vector3> dogCoordinates;
 	Wind wind;
 	List<LineRenderer> lines;
+	List<Vector3Pair> lineVerticesPairs;
 	List<GameObject> lineObjects;//objects that each have a LineRenderer
-	GameObject eye;
+	Vector3[] cliffVertices;
 	GameObject cannon;
+
 
 	// Use this for initialization
 	void Start () {
+		cliffVertices = GameObject.Find ("RightSlope").GetComponent<MergeMeshes> ().vertices;
+		lineVerticesPairs = new List<Vector3Pair> ();
+
 		//Get latest angle of cannon
 		cannon = GameObject.Find ("LeftCannon");
 		angle = cannon.GetComponent<LeftCannon> ().angle;
@@ -225,6 +230,27 @@ public class Dog : MonoBehaviour {
 		currentPos [5] = Add (currentPos [5], delta * 0.5f * diff);
 		currentPos [8] = Subtract (currentPos [8], delta * 0.5f * diff);
 	}
+	private void CollisionDetection() {
+		//Check if any points on the dog is past any line of the right cliff, if so, move the point back to its previous position
+		for (int i=0; i<currentPos.Length; i++) {
+			Vector3 dogVertex= currentPos[i];
+			for (int j=0; j<cliffVertices.Length-1; j++) {
+				Vector3 a = cliffVertices[j];
+				Vector3 b = cliffVertices[j+1];
+				//Check if dog vertex is between two consecutive points of a cliff
+				if (dogVertex.y > a.y && dogVertex.y < b.y) {
+					//Check if dog vertex's x position is past the line of the cliff segment
+					if (!isLeft (a,b, dogVertex)) {
+						//Resolve interpenetration by moving the dog vertex to its previous position
+						currentPos[i] = previousPos[i];
+					}
+				}
+			}
+		}
+	}
+	private bool isLeft(Vector3 linePointA, Vector3 linePointB, Vector3 c) {
+		return ((linePointB.x - linePointA.x)*(c.y - linePointA.y) - (linePointB.y - linePointA.y)*(c.x - linePointA.x)) > 0;
+	}
 	private void AccumulateForces() {
 		for (int i=0; i<forceAccumulators.Length; i++) {
 			forceAccumulators[i] = new Vector3(-1*wind.w + (-1*airResistance_x), airResistance_y + gravity, 0);
@@ -233,10 +259,14 @@ public class Dog : MonoBehaviour {
 	public void TimeStep() {
 		AccumulateForces ();
 		Verlet ();
+		CollisionDetection ();
 		SatisfyContraints ();
+
 	}
 	// Update is called once per frame
 	void Update () {
+		lineVerticesPairs.Clear ();
+
 		timeStep = Time.deltaTime;
 		TimeStep ();
 	
@@ -244,10 +274,12 @@ public class Dog : MonoBehaviour {
 		for (int i=0; i<3; i++) {
 			lines[i].SetPosition(0, currentPos[i]);
 			lines[i].SetPosition(1, currentPos[i+1]);
+			lineVerticesPairs.Add(new Vector3Pair(currentPos[i], currentPos[i+1]));
 		}
 		//Close up the rectangle of the body
 		lines[3].SetPosition(0, currentPos[3]);
 		lines[3].SetPosition(1, currentPos[0]);
+		lineVerticesPairs.Add(new Vector3Pair(currentPos[3], currentPos[0]));
 		//Draw neck
 		lines [4].SetPosition (0, currentPos [3]);
 		lines [4].SetPosition (1, currentPos [4]);
