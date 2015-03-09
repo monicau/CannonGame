@@ -3,11 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class Dog : MonoBehaviour {
-
-	public float velocityMin;
-	public float velocityMax;
-	public float initialVelocity;
+	
 	public float angle;
+	public float minVelocity;
+	public float maxVelocity;
 	public GameObject dot;
 	public float gravity;
 	public float timeStep;
@@ -20,6 +19,7 @@ public class Dog : MonoBehaviour {
 	Vector3[] previousPos;
 	Vector3[] forceAccumulators;
 	List<GameObject> dots;
+	List<Vector3> dogCoordinates;
 	Wind wind;
 	List<LineRenderer> lines;
 	List<GameObject> lineObjects;//objects that each have a LineRenderer
@@ -32,7 +32,7 @@ public class Dog : MonoBehaviour {
 		cannon = GameObject.Find ("LeftCannon");
 		angle = cannon.GetComponent<LeftCannon> ().angle;
 		//Find the x and y components of initial velocity
-		initialVelocity = Random.Range (velocityMax, velocityMax + 1);
+		float initialVelocity = Random.Range (minVelocity, maxVelocity);
 		vi_x = initialVelocity * Mathf.Cos (Mathf.Deg2Rad*angle);
 		vi_y = initialVelocity * Mathf.Sin (Mathf.Deg2Rad*angle);
 
@@ -40,7 +40,7 @@ public class Dog : MonoBehaviour {
 		lines = new List<LineRenderer> ();
 		lineObjects = new List<GameObject> ();
 
-		for (int i=0; i<16; i++) {
+		for (int i=0; i<17; i++) {
 			GameObject o = new GameObject ();
 			o.transform.parent = gameObject.transform;
 			LineRenderer lineR = o.AddComponent<LineRenderer> ();
@@ -55,76 +55,40 @@ public class Dog : MonoBehaviour {
 		float cannonY = (10 * (2.0f / 3.0f)) - 5;
 
 		//Set the vertex locations of the dog
-		dots = new List<GameObject> ();
+		dogCoordinates = new List<Vector3> ();
 		//Body:
-		GameObject d0 = Instantiate (dot) as GameObject;
-		d0.transform.position = new Vector3(0-cannonX, 0+cannonY, 0);
-		dots.Add (d0);
-		GameObject d1 = Instantiate (dot) as GameObject;
-		d1.transform.position = new Vector3(1-cannonX,0+cannonY,0);
-		dots.Add (d1);
-		GameObject d2 = Instantiate (dot) as GameObject;
-		d2.transform.position = new Vector3(1-cannonX,0.5f+cannonY,0);
-		dots.Add (d2);
-		GameObject d3 = Instantiate (dot) as GameObject;
-		d3.transform.position = new Vector3(0-cannonX,0.5f+cannonY,0);
-		dots.Add (d3);
+		dogCoordinates.Add (new Vector3 (0 - cannonX, 0 + cannonY, 0));
+		dogCoordinates.Add (new Vector3 (1 - cannonX, 0 + cannonY, 0));
+		dogCoordinates.Add (new Vector3(1-cannonX,0.5f+cannonY,0));
+		dogCoordinates.Add (new Vector3(0-cannonX,0.5f+cannonY,0));
 		//Neck:
-		GameObject d4 = Instantiate (dot) as GameObject;
-		d4.transform.position = new Vector3(-0.2f-cannonX,0.7f+cannonY,0);
-		dots.Add (d4);
+		dogCoordinates.Add (new Vector3 (-0.2f - cannonX, 0.7f + cannonY, 0));
 		//Eye
-		GameObject d5 = Instantiate (dot) as GameObject;
-		d5.transform.position = new Vector3(-0.3f-cannonX, 0.85f+cannonY, 0);
-		dots.Add (d5);
+		dogCoordinates.Add (new Vector3 (-0.3f - cannonX, 0.85f + cannonY, 0));
 		//Head:
-		GameObject d6 = Instantiate (dot) as GameObject;
-		d6.transform.position = new Vector3(-0.2f-cannonX,1.0f+cannonY,0);
-		dots.Add (d6);
-		GameObject d7 = Instantiate (dot) as GameObject;
-		d7.transform.position = new Vector3(-0.6f-cannonX,1.0f+cannonY,0);
-		dots.Add (d7);
-		GameObject d8 = Instantiate (dot) as GameObject;
-		d8.transform.position = new Vector3(-0.6f-cannonX,0.7f+cannonY,0);
-		dots.Add (d8);
+		dogCoordinates.Add (new Vector3 (-0.2f - cannonX, 1.0f + cannonY, 0));
+		dogCoordinates.Add (new Vector3 (-0.6f - cannonX, 1.0f + cannonY, 0));
+		dogCoordinates.Add (new Vector3 (-0.6f - cannonX, 0.7f + cannonY, 0));
 		//Tail:
-		GameObject d9 = Instantiate (dot) as GameObject;
-		d9.transform.position = new Vector3(1.3f-cannonX,0.8f+cannonY,0);
-		dots.Add (d9);
+		dogCoordinates.Add (new Vector3 (1.3f - cannonX, 0.8f + cannonY, 0));
 		//Front leg:
-		GameObject d10 = Instantiate (dot) as GameObject;
-		d10.transform.position = new Vector3(0.25f-cannonX,0+cannonY,0);
-		dots.Add (d10);
-		GameObject d11 = Instantiate (dot) as GameObject;
-		d11.transform.position = new Vector3(0.25f-cannonX,-0.3f+cannonY,0);
-		dots.Add (d11);
-		GameObject d12 = Instantiate (dot) as GameObject;
-		d12.transform.position = new Vector3(0.25f-cannonX,-0.6f+cannonY,0);
-		dots.Add (d12);
-		GameObject d13 = Instantiate (dot) as GameObject;
-		d13.transform.position = new Vector3(0.05f-cannonX,-0.6f+cannonY,0);
-		dots.Add (d13);
+		dogCoordinates.Add (new Vector3 (0.25f - cannonX, 0 + cannonY, 0));
+		dogCoordinates.Add (new Vector3 (0.25f - cannonX, -0.3f + cannonY, 0));
+		dogCoordinates.Add (new Vector3 (0.25f - cannonX, -0.6f + cannonY, 0));
+		dogCoordinates.Add (new Vector3 (0.05f - cannonX, -0.6f + cannonY, 0));
 		//Rear leg:
-		GameObject d14 = Instantiate (dot) as GameObject;
-		d14.transform.position = new Vector3(0.75f-cannonX,0+cannonY,0);
-		dots.Add (d14);
-		GameObject d15 = Instantiate (dot) as GameObject;
-		d15.transform.position = new Vector3(0.75f-cannonX,-0.3f+cannonY,0);
-		dots.Add (d15);
-		GameObject d16 = Instantiate (dot) as GameObject;
-		d16.transform.position = new Vector3(0.75f-cannonX,-0.6f+cannonY,0);
-		dots.Add (d16);
-		GameObject d17 = Instantiate (dot) as GameObject;
-		d17.transform.position = new Vector3(0.55f-cannonX,-0.6f+cannonY,0);
-		dots.Add (d17);
+		dogCoordinates.Add (new Vector3 (0.75f - cannonX, 0 + cannonY, 0));
+		dogCoordinates.Add (new Vector3 (0.75f - cannonX, -0.3f + cannonY, 0));
+		dogCoordinates.Add (new Vector3 (0.75f - cannonX, -0.6f + cannonY, 0));
+		dogCoordinates.Add (new Vector3 (0.55f - cannonX, -0.6f + cannonY, 0));
 
-		currentPos = new Vector3[dots.Count];
-		previousPos = new Vector3[dots.Count];
-		forceAccumulators = new Vector3[dots.Count];
+		currentPos = new Vector3[dogCoordinates.Count];
+		previousPos = new Vector3[dogCoordinates.Count];
+		forceAccumulators = new Vector3[dogCoordinates.Count];
 
-		for (int i=0; i<dots.Count; i++) {
-			currentPos[i] = dots[i].transform.position;
-			previousPos[i] = dots[i].transform.position;
+		for (int i=0; i<dogCoordinates.Count; i++) {
+			currentPos[i] = dogCoordinates[i];
+			previousPos[i] = Subtract(dogCoordinates[i], new Vector3(vi_x, vi_y, 0));
 			forceAccumulators[i] = new Vector3(-1*wind.w + (-1*airResistance_x), airResistance_y + gravity, 0);
 		}
 	}
@@ -167,7 +131,7 @@ public class Dog : MonoBehaviour {
 		diff = (deltaLength-0.5f) / deltaLength;
 		currentPos [0] = Add (currentPos [0], delta * 0.5f * diff);
 		currentPos [3] = Subtract (currentPos [3], delta * 0.5f * diff);
-		//dist(v1,v3)==1.118
+		//dist(v1,v3)==1.118  Real distance is sqrt(0.5^2 + 1^2) but we want to be cheap
 		delta = Subtract (currentPos [3], currentPos [1]);
 		deltaLength = Mathf.Sqrt (Vector3.Dot (delta, delta));
 		diff = (deltaLength-1.118f) / deltaLength;
@@ -179,10 +143,91 @@ public class Dog : MonoBehaviour {
 		diff = (deltaLength-1.118f) / deltaLength;
 		currentPos [0] = Add (currentPos [0], delta * 0.5f * diff);
 		currentPos [2] = Subtract (currentPos [2], delta * 0.5f * diff);
+		//Neck constraint
+		delta = Subtract (currentPos [4], currentPos [3]);
+		deltaLength = Mathf.Sqrt (Vector3.Dot (delta, delta));
+		diff = (deltaLength-0.28f) / deltaLength;//Real distance is sqrt(0.2^2 + 0.2^2) 
+		currentPos [3] = Add (currentPos [3], delta * 0.5f * diff);
+		currentPos [4] = Subtract (currentPos [4], delta * 0.5f * diff);
+		//Head constraint
+		delta = Subtract (currentPos [6], currentPos [4]);
+		deltaLength = Mathf.Sqrt (Vector3.Dot (delta, delta));
+		diff = (deltaLength-0.3f) / deltaLength;
+		currentPos [4] = Add (currentPos [4], delta * 0.5f * diff);
+		currentPos [6] = Subtract (currentPos [6], delta * 0.5f * diff);
+		delta = Subtract (currentPos [7], currentPos [6]);
+		deltaLength = Mathf.Sqrt (Vector3.Dot (delta, delta));
+		diff = (deltaLength-0.4f) / deltaLength;
+		currentPos [6] = Add (currentPos [6], delta * 0.5f * diff);
+		currentPos [7] = Subtract (currentPos [7], delta * 0.5f * diff);
+		delta = Subtract (currentPos [8], currentPos [7]);
+		deltaLength = Mathf.Sqrt (Vector3.Dot (delta, delta));
+		diff = (deltaLength-0.3f) / deltaLength;
+		currentPos [7] = Add (currentPos [7], delta * 0.5f * diff);
+		currentPos [8] = Subtract (currentPos [8], delta * 0.5f * diff);
+		delta = Subtract (currentPos [8], currentPos [4]);
+		deltaLength = Mathf.Sqrt (Vector3.Dot (delta, delta));
+		diff = (deltaLength-0.4f) / deltaLength;
+		currentPos [4] = Add (currentPos [4], delta * 0.5f * diff);
+		currentPos [8] = Subtract (currentPos [8], delta * 0.5f * diff);
+		delta = Subtract (currentPos [7], currentPos [4]);
+		deltaLength = Mathf.Sqrt (Vector3.Dot (delta, delta));
+		diff = (deltaLength-0.5f) / deltaLength;
+		currentPos [4] = Add (currentPos [4], delta * 0.5f * diff);
+		currentPos [7] = Subtract (currentPos [7], delta * 0.5f * diff);
+		//Tail constraint
+		delta = Subtract (currentPos [9], currentPos [2]);
+		deltaLength = Mathf.Sqrt (Vector3.Dot (delta, delta));
+		diff = (deltaLength-0.42f) / deltaLength;//Real distance is sqrt(0.3^2 + 0.3^2)
+		currentPos [2] = Add (currentPos [2], delta * 0.5f * diff);
+		currentPos [9] = Subtract (currentPos [9], delta * 0.5f * diff);
+		//Front leg constraint
+		delta = Subtract (currentPos [11], currentPos [10]);
+		deltaLength = Mathf.Sqrt (Vector3.Dot (delta, delta));
+		diff = (deltaLength-0.3f) / deltaLength;
+		currentPos [10] = Add (currentPos [10], delta * 0.5f * diff);
+		currentPos [11] = Subtract (currentPos [11], delta * 0.5f * diff);
+		delta = Subtract (currentPos [12], currentPos [11]);
+		deltaLength = Mathf.Sqrt (Vector3.Dot (delta, delta));
+		diff = (deltaLength-0.3f) / deltaLength;
+		currentPos [11] = Add (currentPos [11], delta * 0.5f * diff);
+		currentPos [12] = Subtract (currentPos [12], delta * 0.5f * diff);
+		delta = Subtract (currentPos [13], currentPos [12]);
+		deltaLength = Mathf.Sqrt (Vector3.Dot (delta, delta));
+		diff = (deltaLength-0.2f) / deltaLength;
+		currentPos [12] = Add (currentPos [12], delta * 0.5f * diff);
+		currentPos [13] = Subtract (currentPos [13], delta * 0.5f * diff);
+		//Rear leg constraint
+		delta = Subtract (currentPos [15], currentPos [14]);
+		deltaLength = Mathf.Sqrt (Vector3.Dot (delta, delta));
+		diff = (deltaLength-0.3f) / deltaLength;
+		currentPos [14] = Add (currentPos [14], delta * 0.5f * diff);
+		currentPos [15] = Subtract (currentPos [15], delta * 0.5f * diff);
+		delta = Subtract (currentPos [16], currentPos [15]);
+		deltaLength = Mathf.Sqrt (Vector3.Dot (delta, delta));
+		diff = (deltaLength-0.3f) / deltaLength;
+		currentPos [15] = Add (currentPos [15], delta * 0.5f * diff);
+		currentPos [16] = Subtract (currentPos [16], delta * 0.5f * diff);
+		delta = Subtract (currentPos [17], currentPos [16]);
+		deltaLength = Mathf.Sqrt (Vector3.Dot (delta, delta));
+		diff = (deltaLength-0.2f) / deltaLength;
+		currentPos [16] = Add (currentPos [16], delta * 0.5f * diff);
+		currentPos [17] = Subtract (currentPos [17], delta * 0.5f * diff);
+		//Eye constraint
+		delta = Subtract (currentPos [6], currentPos [5]);
+		deltaLength = Mathf.Sqrt (Vector3.Dot (delta, delta));
+		diff = (deltaLength-0.18f) / deltaLength;//Real distance sqrt(0.1^2 + 0.15^2)
+		currentPos [5] = Add (currentPos [5], delta * 0.5f * diff);
+		currentPos [6] = Subtract (currentPos [6], delta * 0.5f * diff);
+		delta = Subtract (currentPos [8], currentPos [5]);
+		deltaLength = Mathf.Sqrt (Vector3.Dot (delta, delta));
+		diff = (deltaLength-0.335f) / deltaLength;//Real distance sqrt(0.3^2 + 0.15^2)
+		currentPos [5] = Add (currentPos [5], delta * 0.5f * diff);
+		currentPos [8] = Subtract (currentPos [8], delta * 0.5f * diff);
 	}
 	private void AccumulateForces() {
 		for (int i=0; i<forceAccumulators.Length; i++) {
-			forceAccumulators[i] = new Vector3(-1*wind.w + (-1*airResistance_x) + vi_x, airResistance_y + gravity + vi_y, 0);
+			forceAccumulators[i] = new Vector3(-1*wind.w + (-1*airResistance_x), airResistance_y + gravity, 0);
 		}
 	}
 	public void TimeStep() {
@@ -232,8 +277,9 @@ public class Dog : MonoBehaviour {
 		lines[14].SetPosition(1, currentPos[16]);
 		lines[15].SetPosition(0, currentPos[16]);
 		lines[15].SetPosition(1, currentPos[17]);
-		//Draw eye TODO
-
+		//Draw eye 
+		lines [16].SetPosition (0, currentPos [5]);
+		lines [16].SetPosition (1, Add(currentPos [5], new Vector3(-0.05f,0,0)));
 	}
 	Vector3 Add(Vector3 a, Vector3 b) {
 		Vector3 result = new Vector3 (a.x + b.x, a.y + b.y, a.z + b.z);

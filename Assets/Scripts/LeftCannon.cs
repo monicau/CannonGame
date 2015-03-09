@@ -17,7 +17,7 @@ public class LeftCannon : MonoBehaviour {
 	void Update () {
 		if (Input.GetKeyDown (KeyCode.Tab)) {
 			angle = Random.Range (minAngle, maxAngle+1);
-			gameObject.transform.eulerAngles = new Vector3(0,0,90-angle);
+			gameObject.transform.eulerAngles = new Vector3(0,0,90+angle);
 			GameObject ball = Instantiate (dogPrefab) as GameObject;
 			Destroy(ball, dogLifeTime);
 		}
