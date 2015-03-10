@@ -7,27 +7,23 @@ public class CollisionDetection : MonoBehaviour {
 	public bool debugOn;
 	public float x_stdev;
 	public float y_stdev;
-	public string slopeName1;
-	public string slopeName2;
 	public Material redMat;
 	public GameObject dot;
 	private GameObject slope1;
-	private GameObject slope2;
 	private Vector3[] vertices1;
-	private Vector3[] vertices2;
 	private float r;
 	private float r_34;
 	private Vector3 ballVertex;
 	private bool collided;
 	private GameObject[] dots;
+	private CannonBall cannonball;
 
 	// Use this for initialization
 	void Start () {
+		cannonball = gameObject.GetComponent<CannonBall> ();
 		collided = false;
-		slope1 = GameObject.Find (slopeName1);
-		slope2 = GameObject.Find (slopeName2);
+		slope1 = GameObject.Find ("LeftSlope");
 		vertices1 = slope1.GetComponent<MergeMeshes>().vertices;
-		vertices2 = slope2.GetComponent<MergeMeshes>().vertices;
 		r = transform.GetComponent<SpriteRenderer>().bounds.extents.y;
 		r_34 = r * (3.0f / 4.0f);
 		if (debugOn) {
@@ -44,22 +40,44 @@ public class CollisionDetection : MonoBehaviour {
 	void Update () {
 		//Get vertices of the ball
 		ballVertex = transform.position;
-		//Do minkowski difference 
-		int j = 0;
-		while (j<vertices1.Length && !collided) {
-		float x = ballVertex.x - vertices1[j].x;
-		float y = ballVertex.y - vertices1[j].y;
-			if (Mathf.Abs(x)<x_stdev && Mathf.Abs(y)<y_stdev) {
-				collided = true;
-				if (debugOn) {
-					Debug.Log(x+","+y);
-					Debug.Log("COLLIDED!!");
-					dots[j].renderer.material = redMat;
+		Vector3[] ballPoints = new Vector3[8];
+		float radius = gameObject.renderer.bounds.extents.x;
+		ballPoints[0] = new Vector3(transform.position.x, transform.position.y + radius, 0); 
+		ballPoints[1] = new Vector3(transform.position.x-(radius*3/4), transform.position.y+(radius*3/4), 0); 
+		ballPoints[2] = new Vector3(transform.position.x - radius, transform.position.y, 0); 
+		ballPoints[3] = new Vector3(transform.position.x-(radius*3/4), transform.position.y-(radius*3/4), 0); 
+		ballPoints[4] = new Vector3(transform.position.x, transform.position.y - radius, 0); 
+		ballPoints[5] = new Vector3(transform.position.x+(radius*3/4), transform.position.y-(radius*3/4), 0); 
+		ballPoints[6] = new Vector3(transform.position.x+radius, transform.position.y, 0); 
+		ballPoints[7] = new Vector3(transform.position.x+(radius *3/4), transform.position.y+(radius*3/4), 0); 
+
+		for (int i=0; i<ballPoints.Length; i++) {
+			for (int j=0; j<vertices1.Length-1; j++) {
+				if (ballPoints[i].y > vertices1[j].y && ballPoints[i].y<vertices1[j+1].y && isLeft(vertices1[j], vertices1[j+1], ballPoints[i])) {
+					cannonball.Bounce();
 				}
-				gameObject.GetComponent<CannonBall>().Bounce();
 			}
-			j++;
 		}
-		//TODO: Also detect for the other slope
+
+		//Do minkowski difference 
+//		int j = 0;
+//		while (j<vertices1.Length && !collided) {
+//		float x = ballVertex.x - vertices1[j].x;
+//		float y = ballVertex.y - vertices1[j].y;
+//			if (Mathf.Abs(x)<x_stdev && Mathf.Abs(y)<y_stdev) {
+//				collided = true;
+//				if (debugOn) {
+//					Debug.Log(x+","+y);
+//					Debug.Log("COLLIDED!!");
+//					dots[j].renderer.material = redMat;
+//				}
+//				gameObject.GetComponent<CannonBall>().Bounce();
+//			}
+//			j++;
+//		}
+	}
+
+	private bool isLeft(Vector3 linePointA, Vector3 linePointB, Vector3 c) {
+		return ((linePointB.x - linePointA.x)*(c.y - linePointA.y) - (linePointB.y - linePointA.y)*(c.x - linePointA.x)) > 0;
 	}
 }

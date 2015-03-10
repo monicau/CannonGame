@@ -6,6 +6,8 @@ public class CannonBall : MonoBehaviour {
 	public bool enableWind;
 	public float pos_x;//x component of ball's position
 	public float pos_y;//y component of ball's position
+	public float prev_pos_x;
+	public float prev_pos_y;
 	public float velocityMin;
 	public float velocityMax;
 	public float initialVelocity;
@@ -16,7 +18,6 @@ public class CannonBall : MonoBehaviour {
 	public float airResistance_x;
 	public float airResistance_y;
 	public float wind;
-	public float cResitution;
 	private bool collided;
 	private float oldVelocity;
 	private Wind windComponent;
@@ -28,6 +29,8 @@ public class CannonBall : MonoBehaviour {
 		cannon = GameObject.Find ("RightCannon");
 		windComponent = GameObject.Find ("Wind").GetComponent<Wind> ();
 		wind = windComponent.w;
+		prev_pos_x = cannon.transform.position.x;
+		prev_pos_y = cannon.transform.position.y;
 		pos_x = cannon.transform.position.x - 1f;
 		pos_y = cannon.transform.position.y + 1f;
 		transform.position = new Vector3 (pos_x, pos_y, 0);
@@ -43,19 +46,22 @@ public class CannonBall : MonoBehaviour {
 	public void Bounce() {
 		oldVelocity = vi_x;
 		vi_x = 0;
-		vi_y = 10f;
+		vi_y = 0;
 		collided = true;
 	}
 	
 	// Update is called once per frame
 	void Update () {
+		prev_pos_x = pos_x;
+		prev_pos_y = pos_y;
+
 		//Get latest wind value
 		wind = windComponent.w;
 
 		if (collided) {
 			count++;
 			if (count == 2) {
-				vi_x = -cResitution*oldVelocity;
+				vi_x = -oldVelocity;
 			} 
 		}
 
@@ -92,5 +98,10 @@ public class CannonBall : MonoBehaviour {
 		//Update cannon ball position
 //		transform.position = new Vector3 (pos_x, pos_y, 0);
 		transform.position = Vector3.Lerp (transform.position, new Vector3 (pos_x, pos_y, 0), 0.005f);
+
+		//Destroy if not moving
+		if (prev_pos_x == pos_x && prev_pos_y == pos_y) {
+			Destroy(gameObject);
+		}
 	}
 }
