@@ -238,7 +238,6 @@ public class Dog : MonoBehaviour {
 		diff = (deltaLength-0.75f) / deltaLength;
 		currentPos [0] = Add (currentPos [0], delta * 0.5f * diff);
 		currentPos [14] = Subtract (currentPos [14], delta * 0.5f * diff);
-
 		//Eye constraint
 		delta = Subtract (currentPos [6], currentPos [5]);
 		deltaLength = Mathf.Sqrt (Vector3.Dot (delta, delta));
@@ -258,12 +257,72 @@ public class Dog : MonoBehaviour {
 			for (int j=0; j<cliffVertices.Length-1; j++) {
 				Vector3 a = cliffVertices[j];
 				Vector3 b = cliffVertices[j+1];
-				//Check if dog vertex is between two consecutive points of a cliff
+				//Check if dog vertex is between two consecutive points of a cliff (in the y-axis)
 				if (dogVertex.y > a.y && dogVertex.y < b.y) {
 					//Check if dog vertex's x position is past the line of the cliff segment
 					if (!isLeft (a,b, dogVertex)) {
 						//Resolve interpenetration by moving the dog vertex to its previous position
 						currentPos[i] = previousPos[i];
+					}
+				}
+			}
+		}
+		//Check if any points of the dog passes any cannonballs
+		//Get all existing cannonballs
+		GameObject[] cannonballs = GameObject.FindGameObjectsWithTag ("cannonball");
+		if (cannonballs.Length != 0) {
+			//Get radius of ball
+			float radius = cannonballs[0].renderer.bounds.extents.x;
+			//We will discretize each ball into 8 lines by storing its 8 points
+			List<Vector3[]> cannonballPoints = new List<Vector3[]> ();//Each item stores 8 points of a ball
+			for (int i=0; i<cannonballs.Length; i++) {
+				Vector3[] ballPoints = new Vector3[8];
+				ballPoints[0] = new Vector3(cannonballs[i].transform.position.x, cannonballs[i].transform.position.y + radius, 0); 
+				ballPoints[1] = new Vector3(cannonballs[i].transform.position.x-(radius*3/4), cannonballs[i].transform.position.y+(radius*3/4), 0); 
+				ballPoints[2] = new Vector3(cannonballs[i].transform.position.x - radius, cannonballs[i].transform.position.y, 0); 
+				ballPoints[3] = new Vector3(cannonballs[i].transform.position.x-(radius*3/4), cannonballs[i].transform.position.y-(radius*3/4), 0); 
+				ballPoints[4] = new Vector3(cannonballs[i].transform.position.x, cannonballs[i].transform.position.y - radius, 0); 
+				ballPoints[5] = new Vector3(cannonballs[i].transform.position.x+(radius*3/4), cannonballs[i].transform.position.y-(radius*3/4), 0); 
+				ballPoints[6] = new Vector3(cannonballs[i].transform.position.x+radius, cannonballs[i].transform.position.y, 0); 
+				ballPoints[7] = new Vector3(cannonballs[i].transform.position.x+(radius *3/4), cannonballs[i].transform.position.y+(radius*3/4), 0); 
+//				for (int x=0; x<ballPoints.Length;x++) {
+//					GameObject ballDot = Instantiate (dot) as GameObject;
+//					ballDot.transform.position = ballPoints[x];
+//					Destroy(ballDot, 0.5f);
+//				}
+				cannonballPoints.Add (ballPoints);
+			}
+			for (int i=0; i<currentPos.Length; i++) {
+				foreach (Vector3[] points in cannonballPoints) {
+					for (int j=0; j<4; j++) {
+						//Check if dog vertex is between two consecutive points of the ball (in the y-axis)
+						if (currentPos[i].y < points[j].y && currentPos[i].y > points[j+1].y) {
+							//Check if dog vertex is inside the ball (in the x-axis)
+							if (j==0) {
+								if (!isLeft (points[1], points[0], currentPos[i]) && isLeft(points[0], points[7], currentPos[i])) {
+									//Intersect in the top quarter of the ball
+									Debug.Log("1!!");
+									currentPos[i] = previousPos[i];
+								}
+							} else if (j==1) {
+								if (!isLeft (points[2], points[1], currentPos[i]) && isLeft(points[7], points[6], currentPos[i])) {
+									//Intersect in the second quarter of the ball
+									currentPos[i] = previousPos[i];
+									Debug.Log("2!!");
+								}
+							} else if (j==2) {
+								if (!isLeft (points[3], points[2], currentPos[i]) && isLeft(points[5], points[6], currentPos[i])) {
+									//Intersect in the third quarter of the ball
+									currentPos[i] = previousPos[i];
+									Debug.Log("3!!");
+								}
+							} else if (j==3) {
+								if (!isLeft (points[4], points[3], currentPos[i]) && isLeft(points[4], points[5], currentPos[i])) {
+									//Intersect in the fourth quarter of the ball
+									currentPos[i] = previousPos[i];
+								}
+							}
+						}
 					}
 				}
 			}
@@ -277,12 +336,26 @@ public class Dog : MonoBehaviour {
 			forceAccumulators[i] = new Vector3(-1*wind.w + (-1*airResistance_x), airResistance_y + gravity, 0);
 		}
 	}
+	private void DestroyIfMotionless() {
+		bool hasMotion = false;
+		//Look at all the vertices in the dog.  If any point did move since the previous timestep, we won't destroy the dog
+		for (int i=0; i<currentPos.Length; i++) {
+			if (!Subtract(currentPos[i], previousPos[i]).Equals(Vector3.zero)) {
+				//This point moved in the last timestep
+				hasMotion = true;
+				break;
+			}
+		}
+		if (!hasMotion) {
+			Destroy(gameObject);
+		}
+	}
 	public void TimeStep() {
 		AccumulateForces ();
 		Verlet ();
 		CollisionDetection ();
 		SatisfyContraints ();
-
+		DestroyIfMotionless ();
 	}
 	// Update is called once per frame
 	void Update () {
