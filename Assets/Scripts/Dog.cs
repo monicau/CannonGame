@@ -295,20 +295,17 @@ public class Dog : MonoBehaviour {
 							if (j==0) {
 								if (!isLeft (points[1], points[0], currentPos[i]) && isLeft(points[0], points[7], currentPos[i])) {
 									//Intersect in the top quarter of the ball
-									Debug.Log("1!!");
 									currentPos[i] = previousPos[i];
 								}
 							} else if (j==1) {
 								if (!isLeft (points[2], points[1], currentPos[i]) && isLeft(points[7], points[6], currentPos[i])) {
 									//Intersect in the second quarter of the ball
 									currentPos[i] = previousPos[i];
-									Debug.Log("2!!");
 								}
 							} else if (j==2) {
 								if (!isLeft (points[3], points[2], currentPos[i]) && isLeft(points[5], points[6], currentPos[i])) {
 									//Intersect in the third quarter of the ball
 									currentPos[i] = previousPos[i];
-									Debug.Log("3!!");
 								}
 							} else if (j==3) {
 								if (!isLeft (points[4], points[3], currentPos[i]) && isLeft(points[4], points[5], currentPos[i])) {

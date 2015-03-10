@@ -12,7 +12,6 @@ public class CollisionDetection : MonoBehaviour {
 	private GameObject slope1;
 	private Vector3[] vertices1;
 	private float r;
-	private float r_34;
 	private Vector3 ballVertex;
 	private bool collided;
 	private GameObject[] dots;
@@ -25,7 +24,6 @@ public class CollisionDetection : MonoBehaviour {
 		slope1 = GameObject.Find ("LeftSlope");
 		vertices1 = slope1.GetComponent<MergeMeshes>().vertices;
 		r = transform.GetComponent<SpriteRenderer>().bounds.extents.y;
-		r_34 = r * (3.0f / 4.0f);
 		if (debugOn) {
 			dots = new GameObject[vertices1.Length];
 			for (int i=0; i<vertices1.Length; i++) {
@@ -50,31 +48,24 @@ public class CollisionDetection : MonoBehaviour {
 		ballPoints[5] = new Vector3(transform.position.x+(radius*3/4), transform.position.y-(radius*3/4), 0); 
 		ballPoints[6] = new Vector3(transform.position.x+radius, transform.position.y, 0); 
 		ballPoints[7] = new Vector3(transform.position.x+(radius *3/4), transform.position.y+(radius*3/4), 0); 
-
-		for (int i=0; i<ballPoints.Length; i++) {
-			for (int j=0; j<vertices1.Length-1; j++) {
-				if (ballPoints[i].y > vertices1[j].y && ballPoints[i].y<vertices1[j+1].y && isLeft(vertices1[j], vertices1[j+1], ballPoints[i])) {
+//		Do minkowski difference 
+		int j = 0;
+		while (j<vertices1.Length && !collided) {
+			for (int i=0; i<ballPoints.Length; i++) {
+				float x = ballPoints[i].x - vertices1[j].x;
+				float y = ballPoints[i].y - vertices1[j].y;
+				if (Mathf.Abs(x)<x_stdev && Mathf.Abs(y)<y_stdev) {
+					collided = true;
+					if (debugOn) {
+						Debug.Log(x+","+y);
+						Debug.Log("COLLIDED!!");
+						dots[j].renderer.material = redMat;
+					}
 					cannonball.Bounce();
 				}
 			}
+			j++;
 		}
-
-		//Do minkowski difference 
-//		int j = 0;
-//		while (j<vertices1.Length && !collided) {
-//		float x = ballVertex.x - vertices1[j].x;
-//		float y = ballVertex.y - vertices1[j].y;
-//			if (Mathf.Abs(x)<x_stdev && Mathf.Abs(y)<y_stdev) {
-//				collided = true;
-//				if (debugOn) {
-//					Debug.Log(x+","+y);
-//					Debug.Log("COLLIDED!!");
-//					dots[j].renderer.material = redMat;
-//				}
-//				gameObject.GetComponent<CannonBall>().Bounce();
-//			}
-//			j++;
-//		}
 	}
 
 	private bool isLeft(Vector3 linePointA, Vector3 linePointB, Vector3 c) {
