@@ -251,9 +251,12 @@ public class Dog : MonoBehaviour {
 		currentPos [8] = Subtract (currentPos [8], delta * 0.5f * diff);
 	}
 	private void CollisionDetection() {
-		//Check if any points on the dog is past any line of the right cliff, if so, move the point back to its previous position
+		//Get all existing cannonballs
+		GameObject[] cannonballs = GameObject.FindGameObjectsWithTag ("cannonball");
+
 		for (int i=0; i<currentPos.Length; i++) {
 			Vector3 dogVertex= currentPos[i];
+			//Check if any points on the dog is past any line of the right cliff, if so, move the point back to its previous position
 			for (int j=0; j<cliffVertices.Length-1; j++) {
 				Vector3 a = cliffVertices[j];
 				Vector3 b = cliffVertices[j+1];
@@ -266,33 +269,24 @@ public class Dog : MonoBehaviour {
 					}
 				}
 			}
-		}
-		//Check if any points of the dog passes any cannonballs
-		//Get all existing cannonballs
-		GameObject[] cannonballs = GameObject.FindGameObjectsWithTag ("cannonball");
-		if (cannonballs.Length != 0) {
-			//Get radius of ball
-			float radius = cannonballs[0].renderer.bounds.extents.x;
-			//We will discretize each ball into 8 lines by storing its 8 points
-			List<Vector3[]> cannonballPoints = new List<Vector3[]> ();//Each item stores 8 points of a ball
-			for (int i=0; i<cannonballs.Length; i++) {
-				Vector3[] ballPoints = new Vector3[8];
-				ballPoints[0] = new Vector3(cannonballs[i].transform.position.x, cannonballs[i].transform.position.y + radius, 0); 
-				ballPoints[1] = new Vector3(cannonballs[i].transform.position.x-(radius*3/4), cannonballs[i].transform.position.y+(radius*3/4), 0); 
-				ballPoints[2] = new Vector3(cannonballs[i].transform.position.x - radius, cannonballs[i].transform.position.y, 0); 
-				ballPoints[3] = new Vector3(cannonballs[i].transform.position.x-(radius*3/4), cannonballs[i].transform.position.y-(radius*3/4), 0); 
-				ballPoints[4] = new Vector3(cannonballs[i].transform.position.x, cannonballs[i].transform.position.y - radius, 0); 
-				ballPoints[5] = new Vector3(cannonballs[i].transform.position.x+(radius*3/4), cannonballs[i].transform.position.y-(radius*3/4), 0); 
-				ballPoints[6] = new Vector3(cannonballs[i].transform.position.x+radius, cannonballs[i].transform.position.y, 0); 
-				ballPoints[7] = new Vector3(cannonballs[i].transform.position.x+(radius *3/4), cannonballs[i].transform.position.y+(radius*3/4), 0); 
-//				for (int x=0; x<ballPoints.Length;x++) {
-//					GameObject ballDot = Instantiate (dot) as GameObject;
-//					ballDot.transform.position = ballPoints[x];
-//					Destroy(ballDot, 0.5f);
-//				}
-				cannonballPoints.Add (ballPoints);
-			}
-			for (int i=0; i<currentPos.Length; i++) {
+			//Check if any points of the dog passes any cannonballs
+			if (cannonballs.Length != 0) {
+				//Get radius of ball
+				float radius = cannonballs[0].renderer.bounds.extents.x;
+				//We will discretize each ball into 8 lines by storing its 8 points
+				List<Vector3[]> cannonballPoints = new List<Vector3[]> ();//Each item stores 8 points of a ball
+				for (int x=0; x<cannonballs.Length; x++) {
+					Vector3[] ballPoints = new Vector3[8];
+					ballPoints[0] = new Vector3(cannonballs[x].transform.position.x, cannonballs[x].transform.position.y + radius, 0); 
+					ballPoints[1] = new Vector3(cannonballs[x].transform.position.x-(radius*3/4), cannonballs[x].transform.position.y+(radius*3/4), 0); 
+					ballPoints[2] = new Vector3(cannonballs[x].transform.position.x - radius, cannonballs[x].transform.position.y, 0); 
+					ballPoints[3] = new Vector3(cannonballs[x].transform.position.x-(radius*3/4), cannonballs[x].transform.position.y-(radius*3/4), 0); 
+					ballPoints[4] = new Vector3(cannonballs[x].transform.position.x, cannonballs[x].transform.position.y - radius, 0); 
+					ballPoints[5] = new Vector3(cannonballs[x].transform.position.x+(radius*3/4), cannonballs[x].transform.position.y-(radius*3/4), 0); 
+					ballPoints[6] = new Vector3(cannonballs[x].transform.position.x+radius, cannonballs[x].transform.position.y, 0); 
+					ballPoints[7] = new Vector3(cannonballs[x].transform.position.x+(radius *3/4), cannonballs[x].transform.position.y+(radius*3/4), 0); 
+					cannonballPoints.Add (ballPoints);
+				}
 				foreach (Vector3[] points in cannonballPoints) {
 					for (int j=0; j<4; j++) {
 						//Check if dog vertex is between two consecutive points of the ball (in the y-axis)
@@ -327,6 +321,7 @@ public class Dog : MonoBehaviour {
 				}
 			}
 		}
+		
 	}
 	private bool isLeft(Vector3 linePointA, Vector3 linePointB, Vector3 c) {
 		return ((linePointB.x - linePointA.x)*(c.y - linePointA.y) - (linePointB.y - linePointA.y)*(c.x - linePointA.x)) > 0;
