@@ -11,5 +11,8 @@ Unity3D game that shoots cannon balls and dogs.
 - Press spacebar to shoot cannon balls
 - Press tab to shoot dogs
 
+##Play
+[Download for Windows] (https://github.com/monicau/CannonGame/blob/master/CannonGame.exe)
+
 ##Disclaimer
 - No dogs were harmed when making this game
