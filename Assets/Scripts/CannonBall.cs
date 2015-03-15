@@ -18,11 +18,8 @@ public class CannonBall : MonoBehaviour {
 	public float airResistance_x;
 	public float airResistance_y;
 	public float wind;
-	private bool collided;
-	private float oldVelocity;
 	private Wind windComponent;
 	private GameObject cannon;
-	private int count = 0;
 
 	// Use this for initialization
 	void Start () {
@@ -40,14 +37,17 @@ public class CannonBall : MonoBehaviour {
 		initialVelocity = Random.Range (velocityMax, velocityMax + 1);
 		vi_x = initialVelocity * Mathf.Cos (Mathf.Deg2Rad*angle);
 		vi_y = initialVelocity * Mathf.Sin (Mathf.Deg2Rad*angle);
-		collided = false;
 	}
 
+	public void Bounce(float x, float y) {
+		Debug.Log ("old:" + vi_x + "," + vi_y);
+		vi_x = x;
+		vi_y = y;
+
+	}
 	public void Bounce() {
-		oldVelocity = vi_x;
 		vi_x = 0;
 		vi_y = 0;
-		collided = true;
 	}
 	
 	// Update is called once per frame
@@ -57,13 +57,6 @@ public class CannonBall : MonoBehaviour {
 
 		//Get latest wind value
 		wind = windComponent.w;
-
-		if (collided) {
-			count++;
-			if (count == 2) {
-				vi_x = -oldVelocity;
-			} 
-		}
 
 		//Apply air resistance to velocity
 		if (vi_x < 0) {
@@ -84,7 +77,7 @@ public class CannonBall : MonoBehaviour {
 		if (!enableWind) {
 			wind = 0;
 		}
-
+//
 		if (pos_x < 0 && vi_x > 0) { 
 			pos_x = -1.0f * (Mathf.Abs (pos_x) + vi_x) + (-1.0f * wind);
 		} else if (pos_x >= 0 && vi_x > 0) {

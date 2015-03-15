@@ -43,6 +43,7 @@ public class Dog : MonoBehaviour {
 		lines = new List<LineRenderer> ();
 		lineObjects = new List<GameObject> ();
 
+		//Create line renderers for each line of the dog
 		for (int i=0; i<17; i++) {
 			GameObject o = new GameObject ();
 			o.transform.parent = gameObject.transform;
@@ -54,6 +55,7 @@ public class Dog : MonoBehaviour {
 			lineObjects.Add (o);
 		}
 
+		//position of the cannon
 		float cannonX = 8;
 		float cannonY = (10 * (2.0f / 3.0f)) - 5;
 
@@ -89,12 +91,14 @@ public class Dog : MonoBehaviour {
 		previousPos = new Vector3[dogCoordinates.Count];
 		forceAccumulators = new Vector3[dogCoordinates.Count];
 
+		//Initialize position of the dog
 		for (int i=0; i<dogCoordinates.Count; i++) {
 			currentPos[i] = dogCoordinates[i];
 			previousPos[i] = Subtract(dogCoordinates[i], new Vector3(vi_x, vi_y, 0));
 			forceAccumulators[i] = new Vector3(-1*wind.w + (-1*airResistance_x), airResistance_y + gravity, 0);
 		}
 	}
+	//Updates location of dog based on accumulated forces
 	private void Verlet() {
 		for (int i=0; i< currentPos.Length; i++) {
 			Vector3 currPos = currentPos[i];
@@ -108,6 +112,7 @@ public class Dog : MonoBehaviour {
 		}
 	}
 	//Constraint source: http://www.pagines.ma1.upc.edu/~susin/files/AdvancedCharacterPhysics.pdf
+	//Satisfy constraints in the dog
 	private void SatisfyContraints() {
 		//Body constraints: distance(v0, v1)==1, distance(v2,v3)==1, dist(v1,v2)==0.5, dist(v0,v3)==0.5, dist(v1,v3)==1.118, dist(v0,v2)==1.118
 		//distance(v0, v1)==1
@@ -288,6 +293,7 @@ public class Dog : MonoBehaviour {
 					cannonballPoints.Add (ballPoints);
 				}
 				foreach (Vector3[] points in cannonballPoints) {
+
 					for (int j=0; j<4; j++) {
 						//Check if dog vertex is between two consecutive points of the ball (in the y-axis)
 						if (currentPos[i].y < points[j].y && currentPos[i].y > points[j+1].y) {
@@ -297,21 +303,21 @@ public class Dog : MonoBehaviour {
 									//Intersect in the top quarter of the ball
 									currentPos[i] = previousPos[i];
 								}
-							} else if (j==1) {
-								if (!isLeft (points[2], points[1], currentPos[i]) && isLeft(points[7], points[6], currentPos[i])) {
-									//Intersect in the second quarter of the ball
-									currentPos[i] = previousPos[i];
-								}
-							} else if (j==2) {
-								if (!isLeft (points[3], points[2], currentPos[i]) && isLeft(points[5], points[6], currentPos[i])) {
-									//Intersect in the third quarter of the ball
-									currentPos[i] = previousPos[i];
-								}
-							} else if (j==3) {
-								if (!isLeft (points[4], points[3], currentPos[i]) && isLeft(points[4], points[5], currentPos[i])) {
-									//Intersect in the fourth quarter of the ball
-									currentPos[i] = previousPos[i];
-								}
+//							} else if (j==1) {
+//								if (!isLeft (points[2], points[1], currentPos[i]) && isLeft(points[7], points[6], currentPos[i])) {
+//									//Intersect in the second quarter of the ball
+//									currentPos[i] = previousPos[i];
+//								}
+//							} else if (j==2) {
+//								if (!isLeft (points[3], points[2], currentPos[i]) && isLeft(points[5], points[6], currentPos[i])) {
+//									//Intersect in the third quarter of the ball
+//									currentPos[i] = previousPos[i];
+//								}
+//							} else if (j==3) {
+//								if (!isLeft (points[4], points[3], currentPos[i]) && isLeft(points[4], points[5], currentPos[i])) {
+//									//Intersect in the fourth quarter of the ball
+//									currentPos[i] = previousPos[i];
+//								}
 							}
 						}
 					}
